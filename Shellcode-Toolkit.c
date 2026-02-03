@@ -50,6 +50,7 @@ static void *GetDLLBase(void *PEBBase, unsigned int ModuleHash) {
 		}
 		if (ModuleHashCalc == ModuleHash) {
 			ModuleBaseOut = ModuleBase;
+			break;
 		}
 	}
 	return ModuleBaseOut;
