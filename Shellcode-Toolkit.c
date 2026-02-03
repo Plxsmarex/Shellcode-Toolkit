@@ -33,7 +33,6 @@ static void *GetPEBBase() {
 */
 
 static void *GetDLLBase(void *PEBBase, unsigned int ModuleHash) {
-	void *ModuleBaseOut = 0;
 	unsigned char *LDRData = *(unsigned char**)((unsigned char*)PEBBase + 0x18);
 	unsigned char *InLoadOrderList = LDRData + 0x20;
 	unsigned char *CurrentListEntry = *(unsigned char**)(InLoadOrderList);
@@ -49,11 +48,10 @@ static void *GetDLLBase(void *PEBBase, unsigned int ModuleHash) {
 			ModuleHashCalc = ((ModuleHashCalc << 5) + ModuleHashCalc) + (unsigned int)NameChar;
 		}
 		if (ModuleHashCalc == ModuleHash) {
-			ModuleBaseOut = ModuleBase;
-			break;
+			return ModuleBase;
 		}
 	}
-	return ModuleBaseOut;
+	return 0;
 }
 
 
