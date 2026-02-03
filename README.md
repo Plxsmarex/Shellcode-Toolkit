@@ -11,12 +11,12 @@ Shellcode-Toolkit.c contains a few functions which will be very useful in develo
 Main.c contains some example code for a messagebox shellcode, this compiles to a 416 byte shellcode.
 
 # GetDLLBase
-GetDLLBase is a function that can be used to locate modules (DLLs), it takes the base address of the PEB (Use GetPEBBase to get it) and a hash for a module (More information on the hashing later), it will then locate the base address of the inputted module by comparing its hash against the hash of every module in the PEB LDR module list. It will return the base address of the found module, or 0 if not found.
+GetDLLBase is a function that can be used to locate modules (DLLs), it takes the base address of the PEB (Use GetPEBBase to get it) and a hash for a module (More information on the hashing later), it will then locate the base address of the inputted module by comparing its hash against the hash of every module in the PEB LDR module list until there is a match. It will return the base address of the found module, or 0 if not found.
 
 GetDLLBase's search system also bypasses PEB hooking (Fake DLLs in the module list). GetDLLBase can be used as a replacement for the Windows API GetModuleHandle.
 
 # GetExportAddress
-GetExportAddress functions similar to GetDLLBase, but it is for exports (Functions/APIs) instead of modules, this will take the base address of a target module (Obtained using GetDLLBase) and a hash for an export, it will then locate the base address of the inputted export by comparing its hash against the hash of every export in the export directory of the selected module. It will return the base address of the found export, or 0 if not found.
+GetExportAddress functions similar to GetDLLBase, but it is for exports (Functions/APIs) instead of modules, this will take the base address of a target module (Obtained using GetDLLBase) and a hash for an export, it will then locate the base address of the inputted export by comparing its hash against the hash of every export in the export directory of the selected module until there is a match. It will return the base address of the found export, or 0 if not found.
 
 GetExportAddress can be used as a complete replacement for the Windows API GetProcAddress.
 
