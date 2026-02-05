@@ -28,7 +28,7 @@ Hasher.ps1 can be used to hash strings.
 # Issues
 The only issue I had with the Shellcode-Toolkit was that generated shellcode would not work with the C# version of my shellcode loader JITLoader.
 
-The structure of the generated shellcode is also slightly weird and doesn't look like most other shellcode, probably because of the way this tool generates the shellcode. I believe there is a much easier and maybe better way to do it using the Linux version of the GCC C compiler, but I don't use Linux so I can't test it.
+The structure of the generated shellcode is also slightly weird and doesn't look like most other shellcode, probably because of the way this tool generates the shellcode.
 
 # Credits
 https://print3m.github.io/blog/from-c-to-shellcode - Using C to compile shellcode
