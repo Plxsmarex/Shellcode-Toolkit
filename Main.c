@@ -8,6 +8,7 @@ createstring char User32[] = "USER32";
 createstring char Title[] = "Shellcode Test";
 createstring char Message[] = "Hello, world!";
 
+__attribute__((section(".text.entrypoint"), used))
 int EntryPoint() {
 	// Function and module hashes
 	unsigned int Kernel32Hash = 0x6DDB9555; // "KERNEL32.DLL"
