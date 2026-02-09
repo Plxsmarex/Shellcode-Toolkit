@@ -2,13 +2,13 @@
 A simple, easy to use toolkit for generating highly optimized shellcode and tiny executables using Windows GCC.
 
 # How to use
-Simply write your code in Main.c. Put all your strings at the start using the "createstring" macro, the EntryPoint function will be the entry point of the program, you can use standard header files if you want, but do not use any standard C library functions.
+Simply write your code in Main.c. Put all your strings at the start using the "createstring" macro, the EntryPoint function will be the entry point of the program, you can use types and structs in standard header files if you want, but do not use any standard C library functions or imports.
 
-Once done, run "Build.bat" and it will compile it to an executable file using GCC, and then use objcopy to extract the .text section to create the shellcode binary file. GCC and objcopy must be installed and on the PATH environment variable for this to work.
+Once done, run "Build.bat" and it will compile it to a tiny executable file using GCC with a custom linker script, and then use objcopy to extract the .text section to create the shellcode binary file. GCC and objcopy must be on the PATH environment variable for this to work.
 
 Shellcode-Toolkit.c contains a few functions which will be very useful in development, GetPEBBase will get the base address of the Process Environment Block (PEB), there are many useful things that can be found in the PEB and related areas of memory, but for now I will just include functions for loading Windows APIs, additional toolkit functions can be added as an exercise for the reader.
 
-Main.c contains some example code for a messagebox shellcode, this compiles to a 416 byte shellcode.
+Main.c contains some example code for a messagebox shellcode, this compiles to a 416 byte shellcode, and a 1024 byte PE file.
 
 # GetDLLBase
 GetDLLBase is a function that can be used to locate modules (DLLs), it takes the base address of the PEB (Use GetPEBBase to get it) and a hash for a module (More information on the hashing later), it will then locate the base address of the inputted module by comparing its hash against the hash of every module in the PEB LDR module list until there is a match. It will return the base address of the found module, or 0 if not found.
@@ -26,9 +26,7 @@ Shellcode-Toolkit uses optimized hashes for modules and exports instead of plain
 Hasher.ps1 can be used to hash strings.
 
 # Issues
-The only issue I had with the Shellcode-Toolkit was that generated shellcode would not work with the C# version of my shellcode loader JITLoader.
-
-The structure of the generated shellcode is also slightly weird and doesn't look like most other shellcode, probably because of the way this tool generates the shellcode.
+The only issue I had was that generated shellcode would not work with the C# version of my shellcode loader JITLoader.
 
 # Credits
 https://print3m.github.io/blog/from-c-to-shellcode - Using C to compile shellcode
