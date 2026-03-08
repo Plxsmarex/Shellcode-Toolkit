@@ -8,7 +8,7 @@ Once done, run "Build.bat" and it will compile it to a tiny executable file usin
 
 Shellcode-Toolkit.c contains a few functions which will be very useful in development, GetPEBBase will get the base address of the Process Environment Block (PEB), there are many useful things that can be found in the PEB and related areas of memory, but for now I will just include functions for loading Windows APIs, additional toolkit functions can be added as an exercise for the reader.
 
-Main.c contains some example code for a messagebox shellcode, this compiles to a 416 byte shellcode, and a 1024 byte PE file.
+Main.c contains some example code for a messagebox shellcode, this compiles to a 352 byte shellcode, and a 1024 byte PE file.
 
 # GetDLLBase
 GetDLLBase is a function that can be used to locate modules (DLLs), it takes the base address of the PEB (Use GetPEBBase to get it) and a hash for a module (More information on the hashing later), it will then locate the base address of the inputted module by comparing its hash against the hash of every module in the PEB LDR module list until there is a match. It will return the base address of the found module, or 0 if not found.
@@ -26,7 +26,9 @@ Shellcode-Toolkit uses optimized hashes for modules and exports instead of plain
 Hasher.ps1 can be used to hash strings.
 
 # Issues
-The only issue I had was that generated shellcode would not work with the C# version of my shellcode loader JITLoader.
+Calling a Windows API in generated shellcode executed by the C# version of my shellcode loader JITLoader causes an AccessViolationException.
+
+The PE executable files compiled only contain a .text section which could seem suspicious, this also makes the callstack look weird.
 
 # Credits
 https://print3m.github.io/blog/from-c-to-shellcode - Using C to compile shellcode
