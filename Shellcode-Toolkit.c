@@ -22,7 +22,7 @@ static void *GetPEBBase() {
  *    module whose DLL name hash exactly matches the selected module hash, this ensures
  *    the real module base will be returned, even if the PEB is hooked.
  *
- *  - Returns the module's base address on success, or 0 if not found.
+ *  - Returns the module's base address on success, or nothing if not found.
  *
  * Parameters:
  *
@@ -33,25 +33,14 @@ static void *GetPEBBase() {
 */
 
 static void *GetDLLBase(void *PEBBase, unsigned int ModuleHash) {
-	unsigned char *LDRData = *(unsigned char**)((unsigned char*)PEBBase + 0x18);
-	unsigned char *InLoadOrderList = LDRData + 0x20;
-	unsigned char *CurrentListEntry = *(unsigned char**)(InLoadOrderList);
-	for (; CurrentListEntry && CurrentListEntry != InLoadOrderList; CurrentListEntry = *(unsigned char**)(CurrentListEntry)) {
-		unsigned char *ModuleEntry = CurrentListEntry - 0x10;
-		void *ModuleBase = *(void**)(ModuleEntry + 0x30);
-		unsigned short NameLengthBytes = *(unsigned short*)(ModuleEntry + 0x58);
-		unsigned short *NameBuffer = *(unsigned short**)(ModuleEntry + 0x60);
-		int NameLengthChars = (int)(NameLengthBytes >> 1);
-		unsigned int ModuleHashCalc = 5381u;
-		for (int NameIndex = 0; NameIndex < NameLengthChars; ++NameIndex) {
-			unsigned char NameChar = (unsigned char)NameBuffer[NameIndex];
-			ModuleHashCalc = ((ModuleHashCalc << 5) + ModuleHashCalc) + (unsigned int)NameChar;
-		}
-		if (ModuleHashCalc == ModuleHash) {
-			return ModuleBase;
-		}
+	unsigned char *ModulesListEntry = *(unsigned char**)(*(unsigned char**)((unsigned char*)PEBBase + 0x18) + 0x20);
+	for (;ModulesListEntry && ModulesListEntry != *(unsigned char**)((unsigned char*)PEBBase + 0x18) + 0x20; ModulesListEntry = *(unsigned char**)(ModulesListEntry)) {
+		unsigned short *NameBuffer = *(unsigned short**)(ModulesListEntry + 0x50);
+		int NameIndex, NameLength = *(unsigned short*)(ModulesListEntry + 0x48) >> 1;
+		unsigned int ModuleHashCalc = 5381;
+		for (NameIndex = 0; NameIndex < NameLength; ++NameIndex) ModuleHashCalc = (ModuleHashCalc * 33) + NameBuffer[NameIndex];
+		if (ModuleHashCalc == ModuleHash) return *(void**)(ModulesListEntry + 0x20);
 	}
-	return 0;
 }
 
 
@@ -62,7 +51,7 @@ static void *GetDLLBase(void *PEBBase, unsigned int ModuleHash) {
  *  - Searches the export directory of the supplied module base to find the export address
  *    whose name hash matches ExportHash.
  *
- *  - Returns the export address on success, or 0 if not found.
+ *  - Returns the export address on success, or nothing if not found.
  *
  * Parameters:
  *
@@ -73,26 +62,11 @@ static void *GetDLLBase(void *PEBBase, unsigned int ModuleHash) {
 */
 
 static void *GetExportAddress(void *ModuleBase, unsigned int ExportHash) {
-	unsigned int PEHeaderOffset = *(unsigned int*)(ModuleBase + 0x3C);
-	unsigned char *OptionalHeader = ModuleBase + PEHeaderOffset + 4 + 20;
-	unsigned short Magic = *(unsigned short*)OptionalHeader;
-	unsigned char *DataDirectory = (Magic == 0x20B ? OptionalHeader + 0x70 : OptionalHeader + 0x60);
-	unsigned char *ExportDirectory = ModuleBase + *(unsigned int*)DataDirectory;
-	unsigned int NumberOfNames = *(unsigned int*)(ExportDirectory + 0x18);
-	unsigned int AddressOfFunctionsRVA = *(unsigned int*)(ExportDirectory + 0x1C);
-	unsigned int AddressOfNamesRVA = *(unsigned int*)(ExportDirectory + 0x20);
-	unsigned int AddressOfNameOrdinalsRVA = *(unsigned int*)(ExportDirectory + 0x24);
-	for (unsigned int Index = 0; Index < NumberOfNames; Index++) {
-		const unsigned char *Name = (const unsigned char*)(ModuleBase + *(unsigned int*)(ModuleBase + AddressOfNamesRVA + Index * 4));
-		unsigned int ExportHashCalc = 5381u;
-		for (const unsigned char *Ptr = Name; *Ptr; ++Ptr) {
-			ExportHashCalc = ((ExportHashCalc << 5) + ExportHashCalc) + (unsigned int)(*Ptr);
-		}
-		if (ExportHashCalc == ExportHash) {
-			unsigned short Ordinal = *(unsigned short*)(ModuleBase + AddressOfNameOrdinalsRVA + Index * 2);
-			void *Address = ModuleBase + *(unsigned int*)(ModuleBase + AddressOfFunctionsRVA + Ordinal * 4);
-			return Address;
-		}
+	unsigned char *OptionalHeader = ModuleBase + *(unsigned int*)(ModuleBase + 0x3C) + 24;
+	unsigned char *ExportDirectory = ModuleBase + *(unsigned int*)(*(unsigned short*)OptionalHeader == 0x20B ? OptionalHeader + 0x70 : OptionalHeader + 0x60);
+	for (unsigned int Index = 0; Index < *(unsigned int*)(ExportDirectory + 0x18); Index++) {
+		unsigned int ExportHashCalc = 5381;
+		for (const unsigned char *Ptr = (const unsigned char*)(ModuleBase + *(unsigned int*)(ModuleBase + *(unsigned int*)(ExportDirectory + 0x20) + Index * 4)); *Ptr; ++Ptr) ExportHashCalc = ((ExportHashCalc << 5) + ExportHashCalc) + (unsigned int)(*Ptr);
+		if (ExportHashCalc == ExportHash) return ModuleBase + *(unsigned int*)(ModuleBase + *(unsigned int*)(ExportDirectory + 0x1C) + *(unsigned short*)(ModuleBase + *(unsigned int*)(ExportDirectory + 0x24) + Index * 2) * 4);
 	}
-	return 0;
 }
