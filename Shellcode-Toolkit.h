@@ -79,8 +79,9 @@ static void *GetModuleAddress(void *PEB_Address, unsigned int Target_Module_Hash
 static void *GetExportAddress(void *Module_Address, unsigned int Target_Export_Hash)
 {
 	// Locate the Export Directory
-	unsigned char *PE_Headers = (unsigned char*)Module_Address + *(unsigned char*)((unsigned char*)Module_Address + 0x3C);
-	unsigned char *Export_Directory = (unsigned char*)Module_Address + *(unsigned int*)(PE_Headers + 0x88);
+	unsigned char *OptionalHeader = Module_Address + *(unsigned int*)(Module_Address + 0x3C) + 24;
+	unsigned int Export_Address = (*(unsigned short*)OptionalHeader == 0x20B) ? *(unsigned int*)(OptionalHeader + 0x70) : *(unsigned int*)(OptionalHeader + 0x60);
+	unsigned char *Export_Directory = Module_Address + Export_Address;
 	// Get required info
 	unsigned int Number_Of_Names = *(unsigned int*)(Export_Directory + 0x18);
 	unsigned int Address_Functions = *(unsigned int*)(Export_Directory + 0x1C);
