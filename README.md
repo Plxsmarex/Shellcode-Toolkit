@@ -8,7 +8,7 @@ Once finished, run "Build.bat" and it will compile to a tiny executable file usi
 
 Shellcode-Toolkit.c contains a few functions which will useful in development, GetPEBAddress will get the address of the Process Environment Block (PEB), there are many important things that can be found in the PEB and related areas of memory, but for now I will just include functions for finding modules and Windows APIs, additional toolkit functions can be added as an exercise for the reader.
 
-Main.c contains some example code for a messagebox shellcode, this compiles to a 320 byte shellcode, and a 1024 byte PE file.
+Main.c contains some example code for a messagebox shellcode, this compiles to a 336 byte shellcode, and a 1024 byte PE file.
 
 # GetModuleAddress
 GetModuleAddress is a function that can be used to locate modules (DLLs) in the PEB, it takes parameters for the address of the PEB (Use GetPEBAddress to get it) and a hash for the target module (More information on the hashing later). It will then locate the address of the target module by comparing its hash against the hash of every module in the PEB Ldr InMemoryOrderModuleList until there is a match. It will return the address of the target module, or 0 if not found.
