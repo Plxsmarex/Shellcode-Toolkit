@@ -23,7 +23,7 @@ GetExportAddress can be used as a replacement for the Windows API GetProcAddress
 # Hash system
 Shellcode-Toolkit uses optimized 32 bit hashes for modules and exports instead of plaintext strings, this makes it harder to reverse engineer, and reduces the filesize of the compiled shellcode.
 
-Hasher.ps1 can be used to hash strings.
+The HashASCII and HashWide functions can be called to hash data, they are used internally by GetModuleAddress and GetExportAddress. Hasher.ps1 can be used to hash strings if you are going to precompute them.
 
 # Issues
 Calling a Windows API in generated shellcode executed by the C# version of my shellcode loader JITLoader causes an AccessViolationException.
