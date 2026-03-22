@@ -23,7 +23,7 @@ static unsigned int HashASCII(unsigned char *Data)
 	unsigned int Hash = 9327;
 	for (unsigned char *Pointer = Data; *Pointer; ++Pointer)
 	{
-		Hash = (Hash * 37) + (unsigned int)(*Pointer);
+		Hash = (Hash * 37) + (*Pointer);
 	}
 	return Hash;
 }
@@ -35,7 +35,7 @@ static unsigned int HashWide(unsigned short *Wide_Data)
 	unsigned int Hash = 9327;
 	for (unsigned short *Wide_Pointer = Wide_Data; *Wide_Pointer != 0; ++Wide_Pointer)
 	{
-		unsigned char Wide_Byte = (unsigned char)(*Wide_Pointer & 0xFF);
+		unsigned char Wide_Byte = (*Wide_Pointer);
 		Hash = (Hash * 37) + Wide_Byte;
 	}
 	return Hash;
@@ -78,27 +78,27 @@ static void *GetModuleAddress(void *PEB_Address, unsigned int Target_Module_Hash
 // Target_Export_Hash = hash of the target export
 static void *GetExportAddress(void *Module_Address, unsigned int Target_Export_Hash)
 {
-	// Locate the Export Directory
 	unsigned char *Optional_Header = Module_Address + *(unsigned int*)(Module_Address + 0x3C) + 24;
 	// Choose right offset depending on if it's a 32 bit module or 64 bit
 	unsigned int Export_Address = (*(unsigned short*)Optional_Header == 0x20B) ? *(unsigned int*)(Optional_Header + 0x70) : *(unsigned int*)(Optional_Header + 0x60);
+	// Locate the Export Directory
 	unsigned char *Export_Directory = Module_Address + Export_Address;
 	// Get required info
 	unsigned int Number_Of_Names = *(unsigned int*)(Export_Directory + 0x18);
-	unsigned int Address_Functions = *(unsigned int*)(Export_Directory + 0x1C);
-	unsigned int Address_Names = *(unsigned int*)(Export_Directory + 0x20);
-	unsigned int Address_Ordinals = *(unsigned int*)(Export_Directory + 0x24);
+	unsigned int Address_Of_Functions = *(unsigned int*)(Export_Directory + 0x1C);
+	unsigned int Address_Of_Names = *(unsigned int*)(Export_Directory + 0x20);
+	unsigned int Address_Of_Ordinals = *(unsigned int*)(Export_Directory + 0x24);
 	// Repeat for every exported function
 	for (unsigned int Index = 0; Index < Number_Of_Names; Index++)
 	{
-		unsigned char *Name = (unsigned char*)((unsigned char*)Module_Address + *(unsigned int*)((unsigned char*)Module_Address + Address_Names + Index * 4));
+		unsigned char *Name = (unsigned char*)((unsigned char*)Module_Address + *(unsigned int*)((unsigned char*)Module_Address + Address_Of_Names + Index * 4));
 		// Calculate the current export's hash
 		unsigned int Current_Export_Hash = HashASCII(Name);
 		// If Hash of current export is target Hash, return its address
 		if (Current_Export_Hash == Target_Export_Hash)
 		{
-			unsigned short Ordinal = *(unsigned short*)((unsigned char*)Module_Address + Address_Ordinals + Index * 2);
-			void *Target_Export_Address = (unsigned char*)Module_Address + *(unsigned int*)((unsigned char*)Module_Address + Address_Functions + Ordinal * 4);
+			unsigned short Ordinal = *(unsigned short*)((unsigned char*)Module_Address + Address_Of_Ordinals + Index * 2);
+			void *Target_Export_Address = (unsigned char*)Module_Address + *(unsigned int*)((unsigned char*)Module_Address + Address_Of_Functions + Ordinal * 4);
 			return Target_Export_Address;
 		}
 	}
