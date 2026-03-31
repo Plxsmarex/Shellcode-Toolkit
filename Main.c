@@ -13,8 +13,8 @@ createstring char Message[] = "Hello, world!";
 int main(void)
 {
 	// Get address of LoadLibraryA in KERNEL32.DLL, we will use this to load USER32.DLL, which contains the MessageBoxA function
-	void *Address_PEB = GetPEBAddress();
-	void *Address_KERNEL32 = GetModuleAddress(Address_PEB, 0x76918253); // "KERNEL32.DLL"
+	void *Address_PEB          = GetPEBAddress();
+	void *Address_KERNEL32     = GetModuleAddress(Address_PEB, 0x76918253); // "KERNEL32.DLL"
 	void *Address_LoadLibraryA = GetExportAddress(Address_KERNEL32, 0x139A2F01); // "LoadLibraryA"
 
 	// Get ready to call LoadLibraryA
